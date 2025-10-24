@@ -1,0 +1,124 @@
+import streamlit as st
+from PIL import Image
+import random
+
+# --- Page Setup ---
+st.set_page_config(page_title="Ancient Tale", layout="wide")
+
+# --- Game State ---
+if "scene" not in st.session_state:
+    st.session_state.scene = "menu"
+if "email_verified" not in st.session_state:
+    st.session_state.email_verified = False
+if "character" not in st.session_state:
+    st.session_state.character = None
+
+# --- Helper Function ---
+def change_scene(name):
+    st.session_state.scene = name
+
+# --- Load Canva Images ---
+background = "images/background_menu.png"
+enter_button = "images/enter_button.png"
+guest_button = "images/guest_button.png"
+signup_button = "images/signup_button.png"
+
+# --- Custom CSS to Center Everything ---
+st.markdown("""
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+.stApp {
+    background: url('images/background_menu.png') no-repeat center center fixed;
+    background-size: cover;
+}
+.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+}
+.title {
+    font-size: 60px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 2px 2px 10px black;
+    text-align: center;
+    margin-bottom: 50px;
+    font-family: 'Trebuchet MS';
+}
+.btn {
+    display: block;
+    margin-top: 20px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# --- Scene 1: Main Menu ---
+if st.session_state.scene == "menu":
+    st.markdown("<div class='centered'>", unsafe_allow_html=True)
+    st.markdown("<div class='title'>Ancient Tale</div>", unsafe_allow_html=True)
+    
+    st.image(enter_button, width=220)
+    if st.button("Enter ➡️", key="enter"):
+        change_scene("login")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# --- Scene 2: Login Choice ---
+elif st.session_state.scene == "login":
+    st.markdown("<div class='centered'>", unsafe_allow_html=True)
+    st.markdown("<div class='title'></div>", unsafe_allow_html=True)
+
+    st.image(guest_button, width=220)
+    if st.button("Enter as Guest 🎮", key="guest"):
+        change_scene("guest_character")
+
+    st.image(signup_button, width=220)
+    if st.button("Sign Up 📝", key="signup"):
+        change_scene("signup")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# --- Scene 3: Guest Character Selection ---
+elif st.session_state.scene == "guest_character":
+    st.markdown("<div class='centered'>", unsafe_allow_html=True)
+    st.markdown("<div class='title'>Please Choose Your Character</div>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 1], gap="large")
+    with col1:
+        if st.button("🧕 Dhabia", key="girl"):
+            st.session_state.character = "Dhabia"
+            st.success("You chose Dhabia! 🌸")
+    with col2:
+        if st.button("🧑‍🦱 Nehyan", key="boy"):
+            st.session_state.character = "Nehyan"
+            st.success("You chose Nehyan! ⚓")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# --- Scene 4: Sign-Up Page ---
+elif st.session_state.scene == "signup":
+    st.markdown("<div class='centered'>", unsafe_allow_html=True)
+    st.markdown("<div class='title'>Create an Account</div>", unsafe_allow_html=True)
+    
+    email = st.text_input("Enter your email:")
+    password = st.text_input("Create a password:", type="password")
+    
+    if st.button("Send Verification Code", key="verify"):
+        if email and password:
+            st.session_state.verification_code = random.randint(100000, 999999)
+            st.success(f"A verification code was sent to {email} (simulated).")
+        else:
+            st.warning("Please enter both email and password.")
+
+    if "verification_code" in st.session_state:
+        code = st.text_input("Enter your 6-digit verification code:")
+        if st.button("Verify", key="code_check"):
+            if code == str(st.session_state.verification_code):
+                st.session_state.email_verified = True
+                st.success("✅ Email verified successfully!")
+                change_scene("guest_character")
+            else:
+                st.error("❌ Incorrect verification code.")
+    st.markdown("</div>", unsafe_allow_html=True)
